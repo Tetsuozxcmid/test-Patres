@@ -1,8 +1,7 @@
-from fastapi import Depends
+from __future__ import annotations
 from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
-from core.database.db import get_db
-from schemas.librarian import LibrarianAuth
+
 from core.database.base import Base
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import Integer,String,select
