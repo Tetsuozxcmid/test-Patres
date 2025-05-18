@@ -6,6 +6,8 @@ class Settings(BaseSettings):
     DB_USER: str
     DB_PASS: str
     DB_NAME: str
+    SECRET_KEY: str
+    ALGORITHM: str
 
     @property
     def DATABASE_URL(self):
@@ -14,4 +16,8 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file='.env',env_file_encoding='utf-8'
     )
+
 settings = Settings()
+
+def get_auth_data():
+    return {"secret_key" : settings.SECRET_KEY,"algorithm" : settings.ALGORITHM}
