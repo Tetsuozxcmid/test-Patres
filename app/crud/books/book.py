@@ -13,6 +13,9 @@ class BookCRUD:
         self.db.add(book)
         await self.db.commit()
         await self.db.refresh(book)
+        
         return book
+    
+    
     
     
