@@ -12,7 +12,7 @@ router = APIRouter(prefix="/books", tags=["books interactions"])
 
 
 @router.get('/all_books')
-async def get_books(current_user: librarian = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+async def get_books(db: AsyncSession = Depends(get_db)):
     crud = BookCRUD(db)
 
     return await crud.get_all_books()
