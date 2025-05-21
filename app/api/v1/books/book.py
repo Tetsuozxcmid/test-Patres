@@ -27,3 +27,8 @@ async def load_book(book_data: DefaultBookSchema,current_user: librarian = Depen
 async def update_book(book_data: DefaultBookSchema,book_id: int,current_user: librarian = Depends(get_current_user),db: AsyncSession = Depends(get_db)):
     crud = BookCRUD(db)
     return await crud.update_book(book_data,book_id)
+
+@router.delete('/delete_book')
+async def delete_book(book_id: int,current_user: librarian = Depends(get_current_user),db: AsyncSession = Depends(get_db)):
+    crud = BookCRUD(db)
+    return await crud.delete_book(book_id)

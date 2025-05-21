@@ -39,6 +39,19 @@ class BookCRUD:
 
         return book
     
+    async def delete_book(self, book_id: int) -> bool:
+        result = await self.db.execute(select(Book).where(Book.id == book_id))
+        book = result.scalars().first()
+    
+        if not book:
+            return False  
+        
+        await self.db.delete(book)
+        await self.db.commit()
+    
+        return True
+
+    
 
     
     
