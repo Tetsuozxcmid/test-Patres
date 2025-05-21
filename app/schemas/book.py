@@ -27,6 +27,5 @@ class BookUpdate(BaseModel):
     title: Optional[str] = Field(None, min_length=2, max_length=30)
     author: Optional[str] = Field(None, min_length=2, max_length=60)
     publication_year: Optional[int] = Field(None, gt=0, le=datetime.datetime.now().year)
-    isbn: Optional[str] = Field(None, min_length=10, max_length=13)
     quantity: Optional[int] = Field(None, ge=0)
 
