@@ -240,3 +240,52 @@ active_borrows_count = await self.db.execute(
             raise ValueError(
                 "Пользователь уже взял 3 книги, верните хотя бы 1, что бы взять еще")
 ```
+- 4.3
+```
+Нельзя вернуть книгу, которая не была выдана этому читателю или уже возвращена
+```
+Нужно написать условие при котором будет селектиться запись взятой книги учитывай (reader_id) , (book_id) и сравниваться есть ли такая книга по айдишнику в теле записи? 
+
+```Python
+async def update_borrow_note(
+    self, 
+    reader_id: int, 
+    book_id: int,
+    borrow_data: BorrowUpdate
+    ) -> BorrowedBook:
+    
+        result = await self.db.execute( # -> Ключевой момент данного круда для реализации всей логике проверки есть ли такая книга в записи
+        select(BorrowedBook)
+        .where(BorrowedBook.reader_id == reader_id)
+        .where(BorrowedBook.book_id == book_id) 
+        .where(BorrowedBook.return_date == None)
+        )
+        borrowed = result.scalars().first()
+
+        if not borrowed:
+            raise HTTPException(
+                status_code=404,
+                detail="Активная запись о взятии этой книги не найдена для данного читателя"
+            )
+
+    
+        if borrowed.return_date is not None:
+            raise HTTPException(
+                status_code=400,
+                detail="Эта книга уже была возвращена"
+            )
+
+    
+        update_data = borrow_data.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(borrowed, key, value)
+
+    
+        book = await self.db.get(Book, book_id)
+        book.quantity += 1
+
+        await self.db.commit()
+        await self.db.refresh(borrowed)
+
+        return borrowed
+```
