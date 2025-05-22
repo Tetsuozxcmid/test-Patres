@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Dict, Optional
 
+from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.functions import count
@@ -53,23 +54,42 @@ class BorrowCRUD:
         result = await self.db.execute(query)
         return result.scalars().all()
 
-    async def update_borrow_note(self, reader_id: int, borrow_data: BorrowUpdate) -> BorrowedBook:
-        active_borrows = self.get_borrowed_books(reader_id)
+    async def update_borrow_note(
+    self, 
+    reader_id: int, 
+    book_id: int,
+    borrow_data: BorrowUpdate
+    ) -> BorrowedBook:
+    
         result = await self.db.execute(
-            select(BorrowedBook)
-            .where(BorrowedBook.reader_id == reader_id)
-            .where(BorrowedBook.return_date == None)
+        select(BorrowedBook)
+        .where(BorrowedBook.reader_id == reader_id)
+        .where(BorrowedBook.book_id == book_id)
+        .where(BorrowedBook.return_date == None)
         )
         borrowed = result.scalars().first()
 
         if not borrowed:
-            raise ValueError("Активная запись о взятии книги не найдена")
+            raise HTTPException(
+                status_code=404,
+                detail="Активная запись о взятии этой книги не найдена для данного читателя"
+            )
 
+    
+        if borrowed.return_date is not None:
+            raise HTTPException(
+                status_code=400,
+                detail="Эта книга уже была возвращена"
+            )
+
+    
         update_data = borrow_data.model_dump(exclude_unset=True)
-
         for key, value in update_data.items():
             setattr(borrowed, key, value)
-            active_borrows = - 1
+
+    
+        book = await self.db.get(Book, book_id)
+        book.quantity += 1
 
         await self.db.commit()
         await self.db.refresh(borrowed)

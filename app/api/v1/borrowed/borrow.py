@@ -33,13 +33,14 @@ async def get_borrowed_notes(
 @router.patch('/update_borrow_note/{reader_id}',description = "returned note")
 async def update_note(
     reader_id: int,
+    book_id: int,
     borrow_data: BorrowUpdate,
     current_user: librarian = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     crud = BorrowCRUD(db)
     
-    return await crud.update_borrow_note(reader_id, borrow_data)
+    return await crud.update_borrow_note(reader_id,book_id, borrow_data)
     
         
 @router.delete('/delete_borrowed_note/{borrow_id}')
